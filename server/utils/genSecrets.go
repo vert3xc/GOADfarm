@@ -3,7 +3,6 @@ package utils
 import (
 	"crypto/rand"
 	"encoding/hex"
-	"fmt"
 )
 
 func GenerateSecretKey() (string, error) {
@@ -15,3 +14,14 @@ func GenerateSecretKey() (string, error) {
 	return hex.EncodeToString(key), nil
 }
 
+func InitSecrets() (string, string, error){
+	sessionSecret, err := GenerateSecretKey()
+	if err != nil {
+		return "", "", err
+	}
+	apiKey, err := GenerateSecretKey()
+	if err != nil {
+		return "", "", err
+	}
+	return sessionSecret, apiKey, nil
+}

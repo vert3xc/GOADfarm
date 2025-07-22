@@ -46,7 +46,7 @@ func Load() Config {
 		FlagSubmitPeriod: getEnv("FLAG_SUBMIT_PERIOD", 5),
 		FlagLifeTime: getEnv("FLAG_LIFETIME", 300),
 		Password:   getEnv("PASSWORD", "bebra"),
-		ApiToken:   getEnv("API_TOKEN", "token"),
+		ApiToken:   "apitoken",
 		TeamToken:  getEnv("TEAM_TOKEN", "token"),
 		DSN:       getEnv("POSTGRES_DSN", "host=localhost user=postgres password=password dbname=bebra port=5432 sslmode=disable"),
 	}

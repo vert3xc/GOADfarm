@@ -11,7 +11,7 @@ import (
 	"github.com/vert3xc/bebrochka/server/internal/models"
 )
 
-func ructfHttp(flags []string, cfg config.Config) {
+func RuctfHttp(flags []string, cfg config.Config) {
 	jsonData, err := json.Marshal(flags)
 	if err != nil {
 		fmt.Println("Error marshaling flags:", err)

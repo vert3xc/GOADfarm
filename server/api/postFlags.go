@@ -8,6 +8,7 @@ import (
 	"github.com/vert3xc/bebrochka/server/config"
 	"github.com/vert3xc/bebrochka/server/internal/database"
 	"github.com/vert3xc/bebrochka/server/internal/models"
+	"github.com/vert3xc/bebrochka/server/internal/queue"
 )
 
 type FlagInput struct {
@@ -38,6 +39,7 @@ func PostFlags(c *gin.Context, db *gorm.DB) {
 	if len(toInsert) > 0 {
 		for _, flag := range toInsert {
 			db.Clauses(clause.OnConflict{DoNothing: true}).Create(&flag)
+			queue.FlagChan <- flag
 		}
 	}
 
