@@ -2,6 +2,8 @@ package main
 
 import (
 	"log"
+	"path/filepath"
+	"text/template"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
@@ -9,13 +11,13 @@ import (
 	"github.com/vert3xc/bebrochka/server/config"
 	"github.com/vert3xc/bebrochka/server/api"
 	"github.com/vert3xc/bebrochka/server/internal/database"
-	"github.com/vert3xc/bebrochka/server/internal/middleware"
-	"github.com/vert3xc/bebrochka/server/internal/utils"
+	"github.com/vert3xc/bebrochka/server/middleware"
+	"github.com/vert3xc/bebrochka/server/utils"
 	"github.com/vert3xc/bebrochka/server/internal/queue"
 )
 
 func main() {
-	cfg := config.LoadConfig()
+	cfg := config.Load()
 	db, err := database.InitDatabase(cfg)
 	if err != nil {
 		log.Fatalf("Failed to initialize database: %v", err)
@@ -26,27 +28,42 @@ func main() {
 	}
 	log.Printf("Use this API key: %s", apiKey)
 	cfg.ApiToken = apiKey
-	go queue.StartLoop(cfg, db)
+	go queue.StartLoop(&cfg, db)
 	r := gin.Default()
-	r.LoadHTMLGlob("server/frontend/templates/*.html")
-	r.Static("/static", "./frontend/static")
+	r.SetFuncMap(template.FuncMap{
+		"base": filepath.Base,
+	})
+	r.LoadHTMLGlob("/server/frontend/templates/*.html")
+	r.Static("/static", "/server/frontend/static")
 	r.Use(sessions.Sessions("mysession", cookie.NewStore([]byte(sessionSecret))))
 
 	r.GET("/", middleware.AuthRequired(), func(c *gin.Context) {
-		api.Index(c, db, cfg.FlagFormat, "UTC")
+		api.Index(c, &cfg)
+	})
+	r.GET("/feed", middleware.AuthRequired(), func(c *gin.Context) {
+    	api.Feed(c, &cfg)
+	})
+	r.POST("/feed", middleware.AuthRequired(), func(c *gin.Context) {
+    	api.Feed(c, &cfg)
 	})
 	r.GET("/login", func(c *gin.Context) {
-    	api.Login(c, cfg)
+    	api.Login(c, &cfg)
 	})
 	r.POST("/login", func(c *gin.Context) {
-    	api.Login(c, cfg)
+    	api.Login(c, &cfg)
 	})
 
-	r.GET("/api/config", middleware.APITokenRequired(cfg), func(c *gin.Context) {
-		api.GetConfig(c, cfg)
+	r.GET("/api/get_config", middleware.APITokenRequired(cfg), func(c *gin.Context) {
+		api.GetConfig(c, &cfg)
+	})
+	r.GET("/api/post_flags", func(c *gin.Context) {
+		c.JSON(200, gin.H{"message": "POST only"})
 	})
 	r.POST("/api/post_flags", middleware.APITokenRequired(cfg), func(c *gin.Context) {
-		api.PostFlags(c, db)
+		api.PostFlags(c, db, &cfg)
+	})
+	r.GET("/api/list_flags", middleware.APITokenRequired(cfg), func(c *gin.Context) {
+		api.ListFlags(c, db)
 	})
 
 	r.Run(":5001")

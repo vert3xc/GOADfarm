@@ -1,35 +1,23 @@
-# syntax=docker/dockerfile:1
-
-# Build stage
-FROM golang:1.24.4-alpine AS builder
-
+FROM golang:1.24.4 AS builder
 WORKDIR /app
-
-# Install git (needed for go get) and build deps
-RUN apk add --no-cache git
 
 COPY go.mod go.sum ./
 RUN go mod download
 
 COPY . .
 
-RUN go build -o server ./server
+RUN CGO_ENABLED=0 GOOS=linux go build -o server_bin ./server/main.go
 
-# Final stage
-FROM alpine:latest
+# ---- Stage 2: Run ----
+FROM debian:bullseye-slim
 
-WORKDIR /app
+COPY --from=builder /app/server_bin /server/server
 
-# Copy static files and templates
-COPY --from=builder /app/server/frontend /app/server/frontend
-COPY --from=builder /app/server/templates /app/server/templates
+COPY --from=builder /app/server/frontend/static /server/frontend/static
+COPY --from=builder /app/server/frontend/templates /server/frontend/templates
 
-# Copy built binary
-COPY --from=builder /app/server/server /app/server
+WORKDIR /server
 
-# Copy any other needed files (e.g., migrations, config)
-# COPY --from=builder /app/server/config.yaml /app/server/
+RUN mkdir uploads && chmod 777 uploads
 
-EXPOSE 5001
-
-CMD ["/app/server/server"]
+CMD ["./server"]

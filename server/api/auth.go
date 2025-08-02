@@ -13,7 +13,7 @@ type LoginInput struct {
 	Password string `form:"password"`
 }
 
-func Login(c *gin.Context, cfg config.Config) {
+func Login(c *gin.Context, cfg *config.Config) {
 	if c.Request.Method == http.MethodGet {
         c.HTML(http.StatusOK, "login.html", gin.H{})
         return

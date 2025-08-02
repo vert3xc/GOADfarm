@@ -43,6 +43,11 @@ var ResponsesMap = map[FlagStatus][]string{
 		"no such flag"},
 }
 
+type Team struct {
+	Ip       string
+	Name     string
+}
+
 type Flag struct {
     gorm.Model
     Flag     string     `gorm:"column:flag"`
@@ -51,4 +56,12 @@ type Flag struct {
     Time     time.Time  `gorm:"column:time;index:flags_time"`
     Status   FlagStatus `gorm:"column:status;index:flags_status_time,priority:1"`
     Response string     `gorm:"column:response"`
+}
+
+type Feeder struct {
+	Enabled      bool
+	Team        string
+	Periodicity int
+	PseudoChecker string
+	Counter int
 }

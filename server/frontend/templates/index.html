@@ -1,185 +1,55 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
-    <meta name="description" content="Chupapi Munyanya Farm - Flag Management System" />
-    <link rel="icon" href="/static/favicon.ico" />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-    <title>Chupapi Munyanya Farm - Server</title>
-    <link href="/static/css/style.css" rel="stylesheet" />
+    <meta charset="UTF-8">
+    <link rel="icon" href="/static/favicon.ico">
+    <title>Chupapi Munyanya Farm</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        textarea { width: 100%; height: 100px; }
+        table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+        th { background-color: #f0f0f0; }
+        .pagination { margin-top: 20px; }
+        .pagination button { margin-right: 5px; }
+    </style>
+    <script>
+        window.API_KEY = "{{ .Cfg.ApiToken }}";
+        window.FLAG_FORMAT = "{{ .Cfg.FlagFormat }}";
+    </script>
+    <script src="/static/js/manualSubmit.js" defer></script>
 </head>
 <body>
-    <nav class="navbar">
-        <img class="logo" src="/static/img/sol_goodman.png" alt="Logo" />
-        <img class="logo" src="/static/img/bebra.jpeg" alt="Logo" />
-        <div class="navbar-brand">Chupapi Munyanya Farm</div>
-    </nav>
+    <h1>
+    Chupapi Munyanya Farm
+    <img src="/static/img/bebra.jpeg" alt="Bebra" style="width: 80px; height: 80px; vertical-align: middle; margin-left: 16px;">
+    </h1>
+    <h2>Submit Flags</h2>
+    <textarea id="flag-input" placeholder="Text with flags of format {{ .Cfg.FlagFormat }}"></textarea>
+    <button onclick="submitFlags()">Submit</button>
 
-    <div class="container mt-4">
-        <div class="row mb-4">
-            <div class="col-lg-8">
-                <div class="card">
-                    <div class="card-body">
-                        <h4 class="card-title">Show Flags</h4>
-                        <form id="show-flags-form" method="GET" action="/">
-                            <div class="row mb-2">
-                                <div class="col-md-4">
-                                    <label for="sploit-select">Sploit</label>
-                                    <select class="form-control" id="sploit-select" name="sploit">
-                                        <option value="">All</option>
-                                        {{ range .DistinctSploit }}
-                                        <option {{ if eq $.SelectedSploit . }}selected{{ end }}>{{ . }}</option>
-                                        {{ end }}
-                                    </select>
-                                </div>
-                                <div class="col-md-4">
-                                    <label for="team-select">Team</label>
-                                    <select class="form-control" id="team-select" name="team">
-                                        <option value="">All</option>
-                                        {{ range .DistinctTeam }}
-                                        <option {{ if eq $.SelectedTeam . }}selected{{ end }}>{{ . }}</option>
-                                        {{ end }}
-                                    </select>
-                                </div>
-                                <div class="col-md-4">
-                                    <label for="flag-input">
-                                        Flag
-                                        <small class="text-muted">substring, case-insensitive</small>
-                                    </label>
-                                    <input type="text" class="form-control" id="flag-input" name="flag" value="{{ .SelectedFlag }}" />
-                                </div>
-                            </div>
-                            <div class="row mb-3">
-                                <div class="col-md-3">
-                                    <label for="time-since-input">
-                                        Since
-                                        <small class="text-muted ml-2">{{ .ServerTZName }}</small>
-                                    </label>
-                                    <input type="text" class="form-control" id="time-since-input" name="time-since" placeholder="yyyy-mm-dd hh:mm" value="{{ .SelectedTimeSince }}" />
-                                </div>
-                                <div class="col-md-3">
-                                    <label for="time-until-input">
-                                        Until
-                                        <small class="text-muted ml-2">{{ .ServerTZName }}</small>
-                                    </label>
-                                    <input type="text" class="form-control" id="time-until-input" name="time-until" placeholder="yyyy-mm-dd hh:mm" value="{{ .SelectedTimeUntil }}" />
-                                </div>
-                                <div class="col-md-2">
-                                    <label for="status-select">Status</label>
-                                    <select class="form-control" id="status-select" name="status">
-                                        <option value="">All</option>
-                                        {{ range .DistinctStatus }}
-                                        <option {{ if eq $.SelectedStatus . }}selected{{ end }}>{{ . }}</option>
-                                        {{ end }}
-                                    </select>
-                                </div>
-                                <div class="col-md-4">
-                                    <label for="checksystem-response-input">Checksystem response</label>
-                                    <input type="text" class="form-control" id="checksystem-response-input" name="checksystem_response" value="{{ .SelectedChecksystemResponse }}" />
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-12">
-                                    <button type="submit" class="btn btn-primary">Show</button>
-                                </div>
-                            </div>
-                            <input type="hidden" value="1" id="page-number" name="page" />
-                        </form>
-                    </div>
-                </div>
-            </div>
+    <h2>Filter Flags</h2>
+    <label>Sploit: <input type="text" id="filter-sploit"></label>
+    <label>Team: <input type="text" id="filter-team"></label>
+    <label>Status: <input type="text" id="filter-status"></label>
+    <label>Response: <input type="text" id="filter-response"></label>
+    <button onclick="loadFlags()">Apply Filters</button>
 
-            <div class="col-lg-4">
-                <div class="card">
-                    <div class="card-body">
-                        <h4 class="card-title">Add Flags Manually</h4>
-                        <form id="post-flags-manual-form">
-                            <label for="text-with-flags">
-                                Text with flags
-                                <small class="text-muted ml-2">flag format: {{ .FlagFormat }}</small>
-                            </label>
-                            <textarea class="form-control mb-3" id="text-with-flags" name="text" rows="4"></textarea>
-                            <button type="submit" class="btn btn-primary">Send</button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <h2>Flags</h2>
+    <table id="flag-table">
+        <thead>
+            <tr>
+                <th>Time</th>
+                <th>Flag</th>
+                <th>Sploit</th>
+                <th>Team</th>
+                <th>Status</th>
+                <th>Response</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
 
-        <div class="mb-3 text-center query-status"></div>
-
-        <div class="search-results" {{ if .Flags }}style="display: block"{{ end }}>
-            <p class="text-center mb-3">
-                Found <span class="total-count">{{ .TotalFlags }}</span> flags
-            </p>
-
-            {{ if gt (len .Pages) 1 }}
-            <ul class="pagination">
-                {{ range .Pages }}
-                <li class="page-item {{ if eq $.CurrentPage . }}active{{ end }}">
-                    <a class="page-link" href="?page={{ . }}{{ $.QueryStringExceptPage }}">
-                        {{ . }}
-                    </a>
-                </li>
-                {{ end }}
-            </ul>
-            {{ end }}
-
-            <div class="container-fluid px-4">
-                <div class="row">
-                    <div class="col-12">
-                        <div class="card">
-                            <div class="card-header text-center">
-                                <h4 class="card-title mb-0">Flags</h4>
-                            </div>
-                            <div class="card-body">
-                                <div class="table-responsive">
-                                    <table class="table table-hover">
-                                        <thead>
-                                            <tr>
-                                                <th>Sploit</th>
-                                                <th>Team</th>
-                                                <th>Flag</th>
-                                                <th>Time</th>
-                                                <th>Status</th>
-                                                <th style="min-width: 300px;">Checksystem Response</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {{ range .Flags }}
-                                            <tr>
-                                                <td>{{ .Sploit }}</td>
-                                                <td>{{ .Team }}</td>
-                                                <td>{{ .Flag }}</td>
-                                                <td>{{ .Timestamp }}</td>
-                                                <td class="status-{{ .Status }}">{{ .Status }}</td>
-                                                <td>{{ .ServerAns }}</td>
-                                            </tr>
-                                            {{ end }}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {{ if gt (len .Pages) 1 }}
-            <ul class="pagination">
-                {{ range .Pages }}
-                <li class="page-item {{ if eq $.CurrentPage . }}active{{ end }}">
-                    <a class="page-link" href="?page={{ . }}{{ $.QueryStringExceptPage }}">
-                        {{ . }}
-                    </a>
-                </li>
-                {{ end }}
-            </ul>
-            {{ end }}
-        </div>
-    </div>
-
-    <script src="/static/js/jquery.min.js"></script>
+    <div class="pagination" id="pagination"></div>
 </body>
 </html>
