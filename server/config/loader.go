@@ -25,6 +25,7 @@ type Config struct {
 	DSN          string
 	Feeders      []models.Feeder
 	Mut          sync.Mutex
+	ServerPort   int
 }
 
 func getEnv(key, fallback string) string {
@@ -67,6 +68,10 @@ func Load() Config {
 	if err != nil {
 		log.Fatalf("Invalid FLAG_LIFETIME: %v", err)
 	}
+	serverPort, err := strconv.Atoi(getEnv("SERVER_PORT", "5001"))
+	if err != nil {
+		log.Fatalf("Invalid SERVER_PORT: %v", err)
+	}
 	return Config{
 		Teams:      teams,
 		FlagFormat: getEnv("FLAG_FORMAT", "[A-Z0-9]{31}="),
@@ -82,5 +87,6 @@ func Load() Config {
 		DSN:       getEnv("POSTGRES_DSN", "host=db user=postgres password=password dbname=bebra port=5432 sslmode=disable"),
 		Feeders: []models.Feeder{},
 		Mut:      sync.Mutex{},
+		ServerPort: serverPort,
 	}
 }

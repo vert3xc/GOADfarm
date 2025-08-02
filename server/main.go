@@ -4,6 +4,7 @@ import (
 	"log"
 	"path/filepath"
 	"text/template"
+	"fmt"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
@@ -66,5 +67,5 @@ func main() {
 		api.ListFlags(c, db)
 	})
 
-	r.Run(":5001")
+	r.Run(fmt.Sprintf(":%d", cfg.ServerPort))
 }

@@ -38,7 +38,7 @@ func processFeeding(flag FlagInput, cfg *config.Config) {
 	cfg.Mut.Unlock()
 	if shouldRun {
 		log.Printf("Running pseudochecker for flag: %s\n", flag.Flag)
-		cmd := exec.Command("python", cfg.Feeders[idx].PseudoChecker, flag.Flag)
+		cmd := exec.Command("python3", cfg.Feeders[idx].PseudoChecker, flag.Flag)
 		output, err := cmd.CombinedOutput()
 		if err != nil {
 			log.Printf("Error occurred while executing pseudochecker: %v\nOutput: %s\n", err, output)
