@@ -2,7 +2,6 @@ package config
 
 import (
 	"os"
-	"fmt"
 	"strconv"
 	"log"
 	"sync"
@@ -37,21 +36,6 @@ func getEnv(key, fallback string) string {
 
 func Load() Config {
 	teams := []models.Team{}
-	ipFormat := getEnv("IP_FORMAT", "10.0.0.%d")
-	lowerTeamBound, err := strconv.Atoi(getEnv("LOWER_BOUND", "1"))
-	if err != nil {
-		log.Fatalf("Invalid LOWER_BOUND: %v", err)
-	}
-	upperTeamBound, err := strconv.Atoi(getEnv("UPPER_BOUND", "30"))
-	if err != nil {
-		log.Fatalf("Invalid UPPER_BOUND: %v", err)
-	}
-	for i := lowerTeamBound; i < upperTeamBound; i++ {
-		teams = append(teams, models.Team{
-			Ip:   fmt.Sprintf(ipFormat, i),
-			Name: fmt.Sprintf("Team #%d", i),
-		})
-	}
 	boardPort, err := strconv.Atoi(getEnv("BOARD_PORT", "8080"))
 	if err != nil {
 		log.Fatalf("Invalid BOARD_PORT: %v", err)
@@ -72,7 +56,7 @@ func Load() Config {
 	if err != nil {
 		log.Fatalf("Invalid SERVER_PORT: %v", err)
 	}
-	return Config{
+	cfg := Config{
 		Teams:      teams,
 		FlagFormat: getEnv("FLAG_FORMAT", "[A-Z0-9]{31}="),
 		Protocol:   getEnv("PROTOCOL", "ructf_http"),
@@ -89,4 +73,9 @@ func Load() Config {
 		Mut:      sync.Mutex{},
 		ServerPort: serverPort,
 	}
+	err = UpdateTeams(&cfg)
+	if err != nil{
+		log.Fatalf("Error updating teams: %v", err)
+	}
+	return cfg
 }
