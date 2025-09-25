@@ -22,6 +22,10 @@ func submitAndUpdate(batch []models.Flag, cfg *config.Config, db *gorm.DB) {
 		submitFlags = func(flags []string, cfg *config.Config) ([]models.SubmitResult, error) {
             return protocols.RuctfHttp(flags, cfg)
         }
+    case "eu_tcp":
+        submitFlags = func(flags []string, cfg *config.Config) ([]models.SubmitResult, error) {
+            return protocols.EuTCP(flags, cfg)
+        }
 	}
 	results, err := submitFlags(flags, cfg)
 	if err != nil {

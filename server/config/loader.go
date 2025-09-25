@@ -73,9 +73,5 @@ func Load() Config {
 		Mut:      sync.Mutex{},
 		ServerPort: serverPort,
 	}
-	err = UpdateTeams(&cfg)
-	if err != nil{
-		log.Fatalf("Error updating teams: %v", err)
-	}
 	return cfg
 }

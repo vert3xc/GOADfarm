@@ -15,10 +15,29 @@ import (
 	"github.com/vert3xc/bebrochka/server/middleware"
 	"github.com/vert3xc/bebrochka/server/utils"
 	"github.com/vert3xc/bebrochka/server/internal/queue"
+	"github.com/vert3xc/bebrochka/server/protocols"
 )
 
 func main() {
 	cfg := config.Load()
+	proto := cfg.Protocol
+    updateTeams := func(cfg *config.Config) error {
+            return nil
+    }
+	switch proto {
+	case "ructf_http":
+		updateTeams = func(cfg *config.Config) error {
+            return protocols.UpdateTeamsRuctf(cfg)
+        }
+    case "eu_tcp":
+        updateTeams = func(cfg *config.Config) error {
+            return protocols.UpdateTeamsEuctf(cfg)
+        }
+	}
+	err := updateTeams(&cfg)
+	if err != nil{
+		log.Fatalf("Error updating teams: %v", err)
+	}
 	db, err := database.InitDatabase(cfg)
 	if err != nil {
 		log.Fatalf("Failed to initialize database: %v", err)

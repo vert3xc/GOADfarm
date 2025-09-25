@@ -36,9 +36,9 @@ type SubmitResult struct {
 }
 
 var ResponsesMap = map[FlagStatus][]string{
-	StatusAccepted: {"accepted", "congrat"},
+	StatusAccepted: {"accepted", "congrat", "ok"},
 	StatusRejected: {"bad", "wrong", "expired", "unknown", "your own",
-		"too old", "not in database", "already submitted", "invalid flag"},
+		"too old", "not in database", "already submitted", "invalid flag", "inv", "old", "err", "own"},
 	StatusQueued: {"timeout", "game not started", "try again later", "game over", "is not up",
 		"no such flag"},
 }
